@@ -1,0 +1,12 @@
+APP DESKTOP - SISTEMA MESQUITA
+
+1) Deixe o arquivo .env na raiz do projeto.
+2) Rode instalar-app-desktop.bat uma vez.
+3) Para usar como app, rode abrir-app-desktop.bat.
+4) Para gerar um instalador .exe do Windows, rode gerar-instalador-app.bat.
+5) O instalador sai na pasta release.
+
+Observações:
+- O app abre sem navegador, em janela própria.
+- Se o Windows pedir permissão, aceite.
+- Para criar atalho na área de trabalho do app instalado, use o instalador gerado.
