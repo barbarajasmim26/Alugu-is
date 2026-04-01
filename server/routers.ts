@@ -107,7 +107,7 @@ export const appRouter = router({
         caucao: z.string().nullable().optional(),
         aluguel: z.string().optional(),
         diaPagamento: z.number().nullable().optional(),
-        status: z.enum(["ativo", "encerrado", "pendente"]).optional(),
+        status: z.enum(["ativo", "encerrado", "pendente", "ex-inquilino"]).optional(),
         telefone: z.string().nullable().optional(),
         observacoes: z.string().nullable().optional(),
       }))

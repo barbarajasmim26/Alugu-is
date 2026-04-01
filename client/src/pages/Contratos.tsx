@@ -96,6 +96,7 @@ export default function Contratos() {
             <option value="ativo">✅ Ativo</option>
             <option value="encerrado">⚠ Contrato Vencido</option>
             <option value="pendente">⏳ Pendente</option>
+            <option value="ex-inquilino">👤 Ex-Inquilino</option>
           </select>
         </div>
       </div>

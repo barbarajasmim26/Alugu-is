@@ -247,23 +247,38 @@ export default function ContratoDetalhe() {
                     ⚠ Contrato Vencido
                   </span>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <StatusBadge status={contrato.status} size="md" />
-                    <button
-                      onClick={() => updateStatusMutation.mutate({
-                        id,
-                        status: contrato.status === "ativo" ? "encerrado" : "ativo"
-                      })}
-                      disabled={updateStatusMutation.isPending}
-                      className="text-xs px-2.5 py-0.5 rounded-full font-semibold transition-all disabled:opacity-50 hover:opacity-90"
-                      style={{
-                        background: contrato.status === "ativo" ? "oklch(0.65 0.20 25)" : "oklch(0.70 0.15 120)",
-                        color: "white"
-                      }}
-                      title={contrato.status === "ativo" ? "Desativar inquilino" : "Ativar inquilino"}
-                    >
-                      {updateStatusMutation.isPending ? "..." : (contrato.status === "ativo" ? "Desativar" : "Ativar")}
-                    </button>
+                    {contrato.status !== "ex-inquilino" && (
+                      <button
+                        onClick={() => updateStatusMutation.mutate({
+                          id,
+                          status: contrato.status === "ativo" ? "encerrado" : "ativo"
+                        })}
+                        disabled={updateStatusMutation.isPending}
+                        className="text-xs px-2.5 py-0.5 rounded-full font-semibold transition-all disabled:opacity-50 hover:opacity-90"
+                        style={{
+                          background: contrato.status === "ativo" ? "oklch(0.65 0.20 25)" : "oklch(0.70 0.15 120)",
+                          color: "white"
+                        }}
+                        title={contrato.status === "ativo" ? "Desativar inquilino" : "Ativar inquilino"}
+                      >
+                        {updateStatusMutation.isPending ? "..." : (contrato.status === "ativo" ? "Desativar" : "Ativar")}
+                      </button>
+                    )}
+                    {contrato.status !== "ex-inquilino" && (
+                      <button
+                        onClick={() => updateStatusMutation.mutate({
+                          id,
+                          status: "ex-inquilino"
+                        })}
+                        disabled={updateStatusMutation.isPending}
+                        className="text-xs px-2.5 py-0.5 rounded-full font-semibold transition-all disabled:opacity-50 hover:opacity-90 bg-slate-500 text-white"
+                        title="Marcar como ex-inquilino (nao renovacao)"
+                      >
+                        {updateStatusMutation.isPending ? "..." : "Ex-Inquilino"}
+                      </button>
+                    )}
                   </div>
                 )}
                 {vencendoBreve && !contratoVencido && (

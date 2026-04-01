@@ -47,7 +47,7 @@ export const contratos = mysqlTable("contratos", {
   caucao: decimal("caucao", { precision: 10, scale: 2 }),
   aluguel: decimal("aluguel", { precision: 10, scale: 2 }).notNull(),
   diaPagamento: int("diaPagamento"),
-  status: mysqlEnum("status", ["ativo", "encerrado", "pendente"]).default("ativo").notNull(),
+  status: mysqlEnum("status", ["ativo", "encerrado", "pendente", "ex-inquilino"]).default("ativo").notNull(),
   telefone: varchar("telefone", { length: 20 }),
   observacoes: text("observacoes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

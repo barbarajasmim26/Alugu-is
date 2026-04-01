@@ -1,4 +1,4 @@
-type Status = "pago" | "caucao" | "pendente" | "atrasado" | "vencendo" | "ativo" | "encerrado" | "vencido";
+type Status = "pago" | "caucao" | "pendente" | "atrasado" | "vencendo" | "ativo" | "encerrado" | "vencido" | "ex-inquilino";
 
 const labels: Record<Status, string> = {
   pago: "Pago",
@@ -9,6 +9,7 @@ const labels: Record<Status, string> = {
   ativo: "Ativo",
   encerrado: "⚠ Contrato Vencido",
   vencido: "⚠ Contrato Vencido",
+  "ex-inquilino": "👤 Ex-Inquilino",
 };
 
 const styles: Record<Status, string> = {
@@ -20,6 +21,7 @@ const styles: Record<Status, string> = {
   ativo: "bg-blue-500 text-white",
   encerrado: "bg-red-100 text-red-700 border border-red-300",
   vencido: "bg-red-100 text-red-700 border border-red-300",
+  "ex-inquilino": "bg-slate-400 text-white",
 };
 
 export default function StatusBadge({ status, size = "sm" }: { status: string; size?: "sm" | "md" }) {
