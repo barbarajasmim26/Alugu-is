@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Lock, LogIn } from "lucide-react";
@@ -7,12 +7,12 @@ import { Lock, LogIn } from "lucide-react";
 export default function Login() {
   const [login, setLogin] = useState("");
   const [senha, setSenha] = useState("");
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: () => {
       toast.success("Login realizado com sucesso!");
-      navigate("/");
+      setLocation("/");
     },
     onError: (err) => {
       toast.error(err.message || "Credenciais inválidas");
