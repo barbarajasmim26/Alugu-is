@@ -67,6 +67,16 @@ export default function ContratoDetalhe() {
     onError: (err) => toast.error("Erro ao renovar: " + err.message),
   });
 
+  const updateStatusMutation = trpc.contratos.update.useMutation({
+    onSuccess: () => {
+      toast.success("Status atualizado!");
+      utils.contratos.byId.invalidate({ id });
+      utils.contratos.list.invalidate();
+      utils.contratos.vencendoEm30.invalidate();
+    },
+    onError: () => toast.error("Erro ao atualizar status"),
+  });
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -237,7 +247,24 @@ export default function ContratoDetalhe() {
                     ⚠ Contrato Vencido
                   </span>
                 ) : (
-                  <StatusBadge status={contrato.status} size="md" />
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={contrato.status} size="md" />
+                    <button
+                      onClick={() => updateStatusMutation.mutate({
+                        id,
+                        status: contrato.status === "ativo" ? "encerrado" : "ativo"
+                      })}
+                      disabled={updateStatusMutation.isPending}
+                      className="text-xs px-2.5 py-0.5 rounded-full font-semibold transition-all disabled:opacity-50 hover:opacity-90"
+                      style={{
+                        background: contrato.status === "ativo" ? "oklch(0.65 0.20 25)" : "oklch(0.70 0.15 120)",
+                        color: "white"
+                      }}
+                      title={contrato.status === "ativo" ? "Desativar inquilino" : "Ativar inquilino"}
+                    >
+                      {updateStatusMutation.isPending ? "..." : (contrato.status === "ativo" ? "Desativar" : "Ativar")}
+                    </button>
+                  </div>
                 )}
                 {vencendoBreve && !contratoVencido && (
                   <span className="text-sm bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full font-bold animate-pulse">
