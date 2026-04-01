@@ -170,7 +170,7 @@ export default function Dashboard() {
             ? Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="h-40 bg-muted rounded-2xl animate-pulse" />
               ))
-            : propriedades?.map((prop) => (
+            : (Array.isArray(propriedades) ? propriedades : []).map((prop) => (
                 <Card key={prop.id} className="card-hover border border-border shadow-sm rounded-2xl overflow-hidden">
                   <div className="h-2" style={{ background: "oklch(0.50 0.22 255)" }} />
                   <CardHeader className="pb-2 pt-4 px-5">
