@@ -329,6 +329,7 @@ export default function ContratoDetalhe() {
           <p className="text-xs text-muted-foreground mt-1">Clique em qualquer mês para alterar o status do pagamento</p>
         </CardHeader>
         <CardContent className="px-5 pb-5">
+          {/* Nota: Os pagamentos podem ser alterados independentemente do status do contrato (ativo/inativo) */}
           {Object.keys(pagamentosPorAno).length === 0 ? (
             <p className="text-muted-foreground text-sm text-center py-6">Nenhum pagamento registrado</p>
           ) : (
