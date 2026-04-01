@@ -3,8 +3,13 @@ import fs from "fs";
 import { type Server } from "http";
 import { nanoid } from "nanoid";
 import path from "path";
+import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
+
+// Get the directory of this file
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
@@ -26,7 +31,7 @@ export async function setupVite(app: Express, server: Server) {
 
     try {
       const clientTemplate = path.resolve(
-        import.meta.dirname,
+        __dirname,
         "../..",
         "client",
         "index.html"
@@ -48,39 +53,83 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  // Build output directory - Vite outputs to dist/public
-  const distPath = path.resolve(import.meta.dirname, "..", "..", "dist", "public");
+  // Resolve the dist/public directory
+  // __dirname is server/_core, so we go up 2 levels to project root, then into dist/public
+  const distPath = path.resolve(__dirname, "../..", "dist", "public");
   
-  console.log(`[Server] Attempting to serve static files from: ${distPath}`);
+  console.log(`[Server] __dirname: ${__dirname}`);
+  console.log(`[Server] Resolved distPath: ${distPath}`);
   
-  if (!fs.existsSync(distPath)) {
-    console.error(`[Server] ERROR: Build directory not found at: ${distPath}`);
-    console.error(`[Server] This usually means the build process didn't complete successfully`);
-    console.error(`[Server] Make sure to run: pnpm build`);
+  // Try multiple possible paths
+  const possiblePaths = [
+    distPath,
+    path.resolve(process.cwd(), "dist", "public"),
+    path.resolve("/opt/render/project/src", "dist", "public"),
+    path.resolve("/opt/render/project", "dist", "public"),
+  ];
+  
+  let foundPath: string | null = null;
+  
+  for (const checkPath of possiblePaths) {
+    console.log(`[Server] Checking: ${checkPath}`);
+    if (fs.existsSync(checkPath)) {
+      console.log(`[Server] ✓ Found at: ${checkPath}`);
+      foundPath = checkPath;
+      break;
+    }
+  }
+  
+  if (!foundPath) {
+    console.error(`[Server] ERROR: Could not find dist/public in any of these locations:`);
+    possiblePaths.forEach(p => console.error(`  - ${p}`));
+    console.error(`[Server] Current working directory: ${process.cwd()}`);
     
-    // Fallback: Try to serve from current directory structure
-    const fallbackPath = path.resolve(import.meta.dirname, "..", "..", "dist");
-    if (fs.existsSync(fallbackPath)) {
-      console.log(`[Server] Found fallback dist directory at: ${fallbackPath}`);
-      app.use(express.static(fallbackPath));
+    // List what's in the current directory
+    try {
+      const cwd = process.cwd();
+      const files = fs.readdirSync(cwd);
+      console.log(`[Server] Files in ${cwd}: ${files.join(", ")}`);
+      
+      if (fs.existsSync(path.join(cwd, "dist"))) {
+        const distFiles = fs.readdirSync(path.join(cwd, "dist"));
+        console.log(`[Server] Files in dist/: ${distFiles.join(", ")}`);
+      }
+    } catch (e) {
+      console.error(`[Server] Could not list directory contents:`, e);
     }
   } else {
-    console.log(`[Server] ✓ Build directory found`);
+    console.log(`[Server] Using dist path: ${foundPath}`);
     
     // List files in dist/public for debugging
     try {
-      const files = fs.readdirSync(distPath);
+      const files = fs.readdirSync(foundPath);
       console.log(`[Server] Files in dist/public: ${files.join(", ")}`);
     } catch (e) {
       console.error(`[Server] Could not list files in dist/public:`, e);
     }
     
-    app.use(express.static(distPath));
+    app.use(express.static(foundPath));
   }
 
   // SPA routing: fall through to index.html for all unmatched routes
   app.use("*", (req, res) => {
-    const indexPath = path.resolve(distPath, "index.html");
+    if (!foundPath) {
+      console.error(`[Server] ERROR: No dist/public path found`);
+      res.status(500).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Build Error</title></head>
+          <body>
+            <h1>Build Error</h1>
+            <p>dist/public directory not found</p>
+            <p>Please ensure the build completed successfully.</p>
+          </body>
+        </html>
+      `);
+      return;
+    }
+    
+    const indexPath = path.resolve(foundPath, "index.html");
     
     if (fs.existsSync(indexPath)) {
       console.log(`[Server] Serving index.html for route: ${req.path}`);
@@ -95,7 +144,6 @@ export function serveStatic(app: Express) {
             <h1>Build Error</h1>
             <p>index.html not found at: ${indexPath}</p>
             <p>Please ensure the build completed successfully.</p>
-            <p>Run: pnpm build</p>
           </body>
         </html>
       `);
