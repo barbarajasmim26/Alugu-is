@@ -12,7 +12,8 @@ export default function Login() {
   const loginMutation = trpc.auth.login.useMutation({
     onSuccess: () => {
       toast.success("Login realizado com sucesso!");
-      setLocation("/");
+      // O cookie httpOnly será definido pelo servidor
+      window.location.href = "/";
     },
     onError: (err) => {
       toast.error(err.message || "Credenciais inválidas");

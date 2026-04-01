@@ -1,13 +1,12 @@
-import { useEffect, useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 export function useAuthCheck() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { data: user, isLoading, isError } = trpc.auth.me.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
 
-  useEffect(() => {
-    // Verificar se há cookie de sessão
-    const hasCookie = document.cookie.includes("session_token");
-    setIsAuthenticated(hasCookie);
-  }, []);
-
-  return isAuthenticated;
+  if (isLoading) return null;
+  if (isError || !user) return false;
+  return true;
 }

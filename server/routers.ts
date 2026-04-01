@@ -31,19 +31,35 @@ import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut, storageGet } from "./storage";
 import { nanoid } from "nanoid";
-import { validateCredentials, createSessionToken } from "./auth";
+import { validateCredentials } from "./auth";
 import { COOKIE_NAME } from "@shared/const";
+import { sdk } from "./_core/sdk";
+import * as db from "./db";
 
 export const appRouter = router({
   system: systemRouter,
   auth: router({
     login: publicProcedure
       .input(z.object({ login: z.string(), senha: z.string() }))
-      .mutation(({ input, ctx }) => {
+      .mutation(async ({ input, ctx }) => {
         if (!validateCredentials(input.login, input.senha)) {
           throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais invalidas" });
         }
-        const token = createSessionToken();
+        
+        // Garantir que o usuário exista no banco para o middleware do SDK funcionar
+        const openId = `user_${input.login}`;
+        await db.upsertUser({
+          openId,
+          name: input.login,
+          role: "admin",
+        });
+
+        const token = await sdk.signSession({
+          openId,
+          appId: process.env.VITE_APP_ID || "default",
+          name: input.login,
+        });
+
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
         return { success: true, token };

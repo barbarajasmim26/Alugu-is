@@ -22,7 +22,7 @@ function LogoutButton() {
   const [isLoading, setIsLoading] = useState(false);
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
-      document.cookie = "session_token=; max-age=0; path=/";
+      
       window.location.href = "/login";
     },
   });
