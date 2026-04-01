@@ -296,7 +296,14 @@ export async function deleteArquivo(id: number) {
 // ---- DASHBOARD / RELATÓRIOS ----
 export async function getDashboardStats() {
   const db = await getDb();
-  if (!db) return null;
+  if (!db) {
+  return {
+    totalContratos: 0,
+    contratosAtivos: 0,
+    vencendoEm30: 0,
+    receitaMes: 0
+  };
+}
 
   const totalContratos = await db.select({ count: sql<number>`count(*)` }).from(contratos);
   const contratosAtivos = await db.select({ count: sql<number>`count(*)` }).from(contratos).where(eq(contratos.status, "ativo"));
