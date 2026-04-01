@@ -15,6 +15,34 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { LogOut } from "lucide-react";
+import { useState } from "react";
+
+function LogoutButton() {
+  const [isLoading, setIsLoading] = useState(false);
+  const logoutMutation = trpc.auth.logout.useMutation({
+    onSuccess: () => {
+      document.cookie = "session_token=; max-age=0; path=/";
+      window.location.href = "/login";
+    },
+  });
+
+  const handleLogout = () => {
+    setIsLoading(true);
+    logoutMutation.mutate();
+  };
+
+  return (
+    <button
+      onClick={handleLogout}
+      disabled={isLoading || logoutMutation.isPending}
+      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/75 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-all disabled:opacity-50"
+    >
+      <LogOut className="w-4 h-4" />
+      <span>Sair</span>
+    </button>
+  );
+}
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -101,7 +129,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-4 border-t border-sidebar-border">
+        <div className="px-4 py-4 border-t border-sidebar-border space-y-2">
+          <LogoutButton />
           <p className="text-sidebar-foreground/40 text-xs text-center">Sistema de Aluguel v1.0</p>
         </div>
       </aside>

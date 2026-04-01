@@ -15,8 +15,28 @@ import Busca from "./pages/Busca";
 import NovoContrato from "./pages/NovoContrato";
 import Recibo from "./pages/Recibo";
 import WhatsApp from "./pages/WhatsApp";
+import Login from "./pages/Login";
+import { useAuthCheck } from "./hooks/useAuthCheck";
 
 function Router() {
+  const isAuthenticated = useAuthCheck();
+
+  // Enquanto carrega, mostra nada
+  if (isAuthenticated === null) {
+    return <div className="min-h-screen bg-white" />;
+  }
+
+  // Se não autenticado, mostra login
+  if (!isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/login" component={Login} />
+        <Route component={Login} />
+      </Switch>
+    );
+  }
+
+  // Se autenticado, mostra as rotas protegidas
   return (
     <Layout>
       <Switch>

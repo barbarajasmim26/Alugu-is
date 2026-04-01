@@ -31,10 +31,23 @@ import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut, storageGet } from "./storage";
 import { nanoid } from "nanoid";
+import { validateCredentials, createSessionToken } from "./auth";
+import { COOKIE_NAME } from "@shared/const";
 
 export const appRouter = router({
   system: systemRouter,
   auth: router({
+    login: publicProcedure
+      .input(z.object({ login: z.string(), senha: z.string() }))
+      .mutation(({ input, ctx }) => {
+        if (!validateCredentials(input.login, input.senha)) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Credenciais invalidas" });
+        }
+        const token = createSessionToken();
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, token, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
+        return { success: true, token };
+      }),
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
