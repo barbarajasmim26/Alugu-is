@@ -32,7 +32,6 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut, storageGet } from "./storage";
 import { nanoid } from "nanoid";
 import { validateCredentials } from "./auth";
-import { COOKIE_NAME } from "@shared/const";
 import { sdk } from "./_core/sdk";
 import * as db from "./db";
 
