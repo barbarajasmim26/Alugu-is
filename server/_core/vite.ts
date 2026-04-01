@@ -48,27 +48,57 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
+  // Build output directory - Vite outputs to dist/public
   const distPath = path.resolve(import.meta.dirname, "..", "..", "dist", "public");
   
+  console.log(`[Server] Attempting to serve static files from: ${distPath}`);
+  
   if (!fs.existsSync(distPath)) {
-    console.error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
-    );
-    console.error(`Checked path: ${distPath}`);
+    console.error(`[Server] ERROR: Build directory not found at: ${distPath}`);
+    console.error(`[Server] This usually means the build process didn't complete successfully`);
+    console.error(`[Server] Make sure to run: pnpm build`);
+    
+    // Fallback: Try to serve from current directory structure
+    const fallbackPath = path.resolve(import.meta.dirname, "..", "..", "dist");
+    if (fs.existsSync(fallbackPath)) {
+      console.log(`[Server] Found fallback dist directory at: ${fallbackPath}`);
+      app.use(express.static(fallbackPath));
+    }
   } else {
-    console.log(`Serving static files from: ${distPath}`);
+    console.log(`[Server] ✓ Build directory found`);
+    
+    // List files in dist/public for debugging
+    try {
+      const files = fs.readdirSync(distPath);
+      console.log(`[Server] Files in dist/public: ${files.join(", ")}`);
+    } catch (e) {
+      console.error(`[Server] Could not list files in dist/public:`, e);
+    }
+    
+    app.use(express.static(distPath));
   }
 
-  app.use(express.static(distPath));
-
-  // fall through to index.html if the file doesn't exist (SPA routing)
-  app.use("*", (_req, res) => {
+  // SPA routing: fall through to index.html for all unmatched routes
+  app.use("*", (req, res) => {
     const indexPath = path.resolve(distPath, "index.html");
+    
     if (fs.existsSync(indexPath)) {
+      console.log(`[Server] Serving index.html for route: ${req.path}`);
       res.sendFile(indexPath);
     } else {
-      console.error(`index.html not found at: ${indexPath}`);
-      res.status(404).send("index.html not found");
+      console.error(`[Server] ERROR: index.html not found at: ${indexPath}`);
+      res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Build Error</title></head>
+          <body>
+            <h1>Build Error</h1>
+            <p>index.html not found at: ${indexPath}</p>
+            <p>Please ensure the build completed successfully.</p>
+            <p>Run: pnpm build</p>
+          </body>
+        </html>
+      `);
     }
   });
 }
