@@ -320,21 +320,25 @@ export default function ContratoDetalhe() {
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                     {MESES.map((mesNome, idx) => {
                       const pag = mesesPag[idx + 1];
-                      if (!pag) {
-                        return (
-                          <div key={idx} className="rounded-xl p-2.5 text-center bg-muted/20 border border-dashed border-border/50">
-                            <p className="text-xs font-semibold text-muted-foreground/60">{mesNome}</p>
-                            <p className="text-xs text-muted-foreground/30 mt-0.5">—</p>
-                          </div>
-                        );
-                      }
+                      const pagamento = pag || {
+                        id: 0,
+                        contratoId: id,
+                        ano: Number(anoStr),
+                        mes: idx + 1,
+                        status: 'pendente' as const,
+                        valorPago: null,
+                        dataPagamento: null,
+                        observacao: null,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                      };
                       return (
                         <div key={idx} className="rounded-xl overflow-visible">
                           <div className="bg-muted/20 rounded-xl p-2 text-center mb-1">
                             <p className="text-xs font-bold text-foreground">{mesNome}</p>
-                            {pag.valorPago && (
+                            {pagamento.valorPago && (
                               <p className="text-xs text-muted-foreground">
-                                {formatBRL(pag.valorPago)}
+                                {formatBRL(pagamento.valorPago)}
                               </p>
                             )}
                           </div>
@@ -344,7 +348,7 @@ export default function ContratoDetalhe() {
                               ano={Number(anoStr)}
                               mes={idx + 1}
                               mesNome={mesNome}
-                              statusAtual={pag.status as "pago" | "pendente" | "atrasado" | "caucao"}
+                              statusAtual={pagamento.status as "pago" | "pendente" | "atrasado" | "caucao"}
                               valorAluguel={contrato.aluguel}
                               onSave={(params) => upsertPagamento.mutate(params)}
                               saving={upsertPagamento.isPending}
