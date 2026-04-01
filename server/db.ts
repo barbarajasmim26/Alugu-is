@@ -184,6 +184,51 @@ export async function deleteContrato(id: number) {
 export async function getPagamentosByContrato(contratoId: number) {
   const db = await getDb();
   if (!db) return [];
+  
+  // Obter contrato para saber o período
+  const contrato = await getContratoById(contratoId);
+  if (!contrato?.contrato) return [];
+  
+  const { dataEntrada, dataSaida } = contrato.contrato;
+  if (!dataEntrada || !dataSaida) {
+    // Se não houver datas, retornar apenas os pagamentos existentes
+    return db.select().from(pagamentos).where(eq(pagamentos.contratoId, contratoId)).orderBy(pagamentos.ano, pagamentos.mes);
+  }
+  
+  // Gerar lista de todos os meses do contrato
+  const startDate = new Date(dataEntrada);
+  const endDate = new Date(dataSaida);
+  const allMonths: Array<{ ano: number; mes: number }> = [];
+  
+  let current = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  const end = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0);
+  
+  while (current <= end) {
+    allMonths.push({
+      ano: current.getFullYear(),
+      mes: current.getMonth() + 1,
+    });
+    current.setMonth(current.getMonth() + 1);
+  }
+  
+  // Obter pagamentos existentes
+  const existingPagamentos = await db.select().from(pagamentos).where(eq(pagamentos.contratoId, contratoId));
+  const existingMap = new Map(existingPagamentos.map(p => ([`${p.ano}-${p.mes}`, p])));
+  
+  // Criar registros faltantes com status 'pendente'
+  for (const { ano, mes } of allMonths) {
+    const key = `${ano}-${mes}`;
+    if (!existingMap.has(key)) {
+      await db.insert(pagamentos).values({
+        contratoId,
+        ano,
+        mes,
+        status: 'pendente',
+      }).onDuplicateKeyUpdate({ set: { status: 'pendente' } });
+    }
+  }
+  
+  // Retornar todos os pagamentos ordenados
   return db.select().from(pagamentos).where(eq(pagamentos.contratoId, contratoId)).orderBy(pagamentos.ano, pagamentos.mes);
 }
 
