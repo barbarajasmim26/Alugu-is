@@ -140,7 +140,7 @@ export default function Dashboard() {
             </Link>
           </div>
           <div className="space-y-2">
-            (Array.isArray(vencendo) ? vencendo : []).slice(0, 3).map(({ contrato, propriedade }) => (
+            {(Array.isArray(vencendo) ? vencendo : []).slice(0, 3).map(({ contrato, propriedade }) => (
               <div key={contrato.id} className="flex items-center justify-between bg-white rounded-xl px-3 py-2 shadow-sm">
                 <div className="flex items-center gap-2">
                   <Home className="w-4 h-4 text-amber-500" />
@@ -157,7 +157,7 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
-      )}
+     ))}
 
       {/* Propriedades */}
       <div>
